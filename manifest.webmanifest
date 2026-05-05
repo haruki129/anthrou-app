@@ -1,0 +1,32 @@
+{
+  "name": "アンソロウ — マーケットプレイス",
+  "short_name": "アンソロウ",
+  "description": "3層譲渡スキーム(運営保証/再構築/データ)・不動産業務・システム開発のマーケットプレイス",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5ecde",
+  "theme_color": "#d97757",
+  "lang": "ja",
+  "categories": ["business", "productivity", "finance"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%23f5ecde'/><circle cx='96' cy='96' r='52' fill='%23d97757'/><text x='96' y='118' font-family='Hiragino Mincho ProN, Yu Mincho, serif' font-size='64' font-weight='600' fill='%23ffffff' text-anchor='middle'>ア</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='108' fill='%23f5ecde'/><circle cx='256' cy='256' r='140' fill='%23d97757'/><text x='256' y='314' font-family='Hiragino Mincho ProN, Yu Mincho, serif' font-size='172' font-weight='600' fill='%23ffffff' text-anchor='middle'>ア</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    { "name": "トーク", "short_name": "Talk", "url": "./index.html#talk" },
+    { "name": "検索", "short_name": "Search", "url": "./index.html#search" },
+    { "name": "保存", "short_name": "Save", "url": "./index.html#save" }
+  ]
+}
