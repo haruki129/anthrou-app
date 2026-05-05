@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>アンソロウ — マーケットプレイス</title>
+<meta name="description" content="アンソロウ マーケットプレイスアプリ — 3層譲渡スキーム(運営保証/再構築/データ)・不動産業務・システム開発・案件募集・公開">
+<!-- PWA v0.6 -->
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#d97757">
+<meta name="application-name" content="アンソロウ">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="アンソロウ">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='38' fill='%23f5ecde'/><circle cx='90' cy='90' r='48' fill='%23d97757'/><text x='90' y='110' font-family='Hiragino Mincho ProN, Yu Mincho, serif' font-size='60' font-weight='600' fill='%23ffffff' text-anchor='middle'>ア</text></svg>">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23f5ecde'/><circle cx='32' cy='32' r='18' fill='%23d97757'/><text x='32' y='40' font-family='Hiragino Mincho ProN, Yu Mincho, serif' font-size='22' font-weight='600' fill='%23ffffff' text-anchor='middle'>ア</text></svg>">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f5ecde; --bg-elev: #f8f1e6; --bg-card: #ffffff; --bg-input: #ffffff;
+  --border: #e6dcc8; --border-soft: #ede4d2;
+  --text: #2a2a2a; --text-mid: #5a5a5a; --text-muted: #8a8a8a;
+  --accent: #d97757; --accent-soft: rgba(217, 119, 87, 0.12); --accent-2: #c66a4d;
+  --green: #6b8e5a; --yellow: #c89e3a; --red: #c75a4f; --blue: #5a7a9e; --purple: #8b6db5;
+  --level-a: #6b8e5a; --level-b: #c89e3a; --level-c: #5a7a9e;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif; background: #ddd5c5; color: var(--text); font-weight: 400; line-height: 1.6; display: flex; justify-content: center; min-height: 100vh; }
+.serif { font-family: "Hiragino Mincho ProN", "Yu Mincho", serif; }
+.phone { width: 100%; max-width: 440px; background: var(--bg); display: flex; flex-direction: column; height: 100vh; position: relative; box-shadow: 0 0 40px rgba(0,0,0,0.08); overflow: hidden; }
+.topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px 12px; background: var(--bg); border-bottom: 1px solid var(--border-soft); flex-shrink: 0; }
+.topbar-title { font-size: 18px; font-weight: 500; }
+.topbar-title .mark { color: var(--accent); }
+.icon-btn { width: 38px; height: 38px; border-radius: 50%; border: none; background: var(--bg-card); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-mid); transition: all 0.15s; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+.icon-btn:active { background: var(--bg-elev); color: var(--text); transform: scale(0.95); }
+.topbar.search-mode { padding: 14px 18px; border-bottom: none; }
+.topbar.search-mode .topbar-title { display: flex; flex-direction: column; align-items: center; gap: 0; }
+.topbar.search-mode .model-name { font-size: 16px; font-weight: 500; display: flex; align-items: center; gap: 4px; }
+.topbar.search-mode .model-sub { font-size: 11px; color: var(--text-muted); }
+main { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; scroll-behavior: smooth; }
+.panel { display: none; padding: 16px 18px 24px; }
+.panel.active { display: block; }
+.panel-head { margin-bottom: 16px; }
+.panel-head h2 { font-size: 22px; font-weight: 500; margin-bottom: 4px; }
+.panel-head p { color: var(--text-muted); font-size: 12px; }
+.drawer-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.4); opacity: 0; pointer-events: none; transition: opacity 0.25s; z-index: 60; }
+.drawer-overlay.show { opacity: 1; pointer-events: auto; }
+.drawer { position: absolute; left: 0; top: 0; bottom: 0; width: 82%; max-width: 340px; background: var(--bg); z-index: 61; transform: translateX(-100%); transition: transform 0.25s ease-out; display: flex; flex-direction: column; box-shadow: 4px 0 24px rgba(0,0,0,0.12); }
+.drawer.show { transform: translateX(0); }
+.drawer-head { padding: 14px 16px; background: linear-gradient(135deg, #f5d8c2, var(--bg-elev)); border-bottom: 1px solid var(--border-soft); display: flex; align-items: center; gap: 10px; cursor: pointer; transition: background 0.15s; }
+.drawer-head:active { filter: brightness(0.97); }
+.drawer-head .av { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent-2)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 500; font-size: 15px; border: 2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.1); flex-shrink: 0; }
+.drawer-head .meta { flex: 1; min-width: 0; }
+.drawer-head .name { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+.drawer-head .hint { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+.drawer-head .stars { font-size: 11px; color: var(--yellow); flex-shrink: 0; }
+.drawer-head .arrow { color: var(--text-muted); flex-shrink: 0; font-size: 16px; margin-left: 2px; }
+.drawer-menu { flex: 1; overflow-y: auto; padding: 12px 10px; list-style: none; }
+.drawer-menu li { display: flex; align-items: center; gap: 14px; padding: 11px 14px; border-radius: 12px; cursor: pointer; font-size: 14px; color: var(--text); transition: background 0.15s; }
+.drawer-menu li:active { background: var(--bg-elev); transform: scale(0.99); }
+.drawer-menu li .ico { width: 32px; height: 32px; border-radius: 9px; background: var(--bg-elev); display: flex; align-items: center; justify-content: center; color: var(--accent); flex-shrink: 0; font-size: 15px; }
+.drawer-section { padding: 14px 18px 6px; font-size: 10px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; }
+.drawer-foot { padding: 14px 20px; border-top: 1px solid var(--border-soft); font-size: 11px; color: var(--text-muted); display: flex; align-items: center; justify-content: space-between; }
+.panel.search-panel { padding: 0; }
+.panel.search-panel.active { display: flex; flex-direction: column; flex: 1; }
+.greeting-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px 24px; text-align: center; }
+.spark-mark { width: 32px; height: 32px; color: var(--accent); margin-bottom: 24px; }
+.greeting-text { font-size: 17px; font-weight: 400; color: var(--text); line-height: 1.7; max-width: 320px; }
+.search-results { padding: 8px 18px 0; display: none; }
+.search-results.show { display: block; }
+.results-head { font-size: 12px; color: var(--text-muted); padding: 4px 0 10px; }
+.level-filter { display: flex; gap: 6px; margin-bottom: 10px; overflow-x: auto; scrollbar-width: none; padding: 0 18px; }
+.level-filter::-webkit-scrollbar { display: none; }
+.lfchip { flex-shrink: 0; background: var(--bg-card); border: 1px solid var(--border); padding: 5px 12px; border-radius: 999px; font-size: 11px; cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 4px; }
+.lfchip.active { background: var(--accent); color: white; border-color: var(--accent); }
+.lfchip.active.a { background: var(--level-a); border-color: var(--level-a); }
+.lfchip.active.b { background: var(--level-b); border-color: var(--level-b); }
+.lfchip.active.c { background: var(--level-c); border-color: var(--level-c); }
+.search-composer { background: var(--bg); padding: 8px 14px 14px; flex-shrink: 0; }
+.search-composer-inner { background: var(--bg-card); border: 1px solid var(--border); border-radius: 22px; padding: 6px; display: flex; align-items: center; gap: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+.composer-add { width: 32px; height: 32px; border: none; background: var(--accent); border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; }
+.search-composer-input { flex: 1; border: none; outline: none; background: transparent; padding: 6px 4px; font-size: 14px; font-family: inherit; color: var(--text); }
+.search-composer-input::placeholder { color: var(--text-muted); }
+.composer-mic { width: 32px; height: 32px; border: none; background: transparent; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-mid); }
+.composer-wave { width: 32px; height: 32px; border: none; background: var(--text); border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--bg); }
+.segment { display: flex; background: var(--bg-elev); border-radius: 999px; padding: 4px; margin-bottom: 16px; border: 1px solid var(--border-soft); }
+.segment-item { flex: 1; text-align: center; padding: 8px 12px; border-radius: 999px; font-size: 13px; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: all 0.15s; }
+.segment-item.active { background: var(--bg-card); color: var(--accent); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.chat-list { list-style: none; }
+.chat-row { display: flex; align-items: center; gap: 12px; padding: 12px 4px; border-bottom: 1px solid var(--border-soft); cursor: pointer; }
+.avatar { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent-2)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 500; font-size: 17px; flex-shrink: 0; }
+.avatar.b2 { background: linear-gradient(135deg, var(--blue), #8aa6c0); }
+.avatar.b3 { background: linear-gradient(135deg, var(--green), #93b380); }
+.avatar.b4 { background: linear-gradient(135deg, var(--yellow), #d6b760); }
+.chat-meta { flex: 1; min-width: 0; }
+.chat-name { font-size: 15px; font-weight: 500; display: flex; justify-content: space-between; }
+.chat-time { font-size: 11px; color: var(--text-muted); font-weight: 400; }
+.chat-preview { font-size: 13px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+.unread { background: var(--accent); color: white; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 999px; margin-left: 6px; }
+.chat-detail { display: none; flex-direction: column; position: absolute; left: 0; right: 0; top: 0; bottom: 0; background: var(--bg); z-index: 30; }
+.chat-detail.active { display: flex; }
+.chat-header { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: var(--bg); border-bottom: 1px solid var(--border-soft); flex-shrink: 0; }
+.chat-back { background: none; border: none; cursor: pointer; color: var(--text-mid); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
+.chat-header .name { font-size: 15px; font-weight: 500; flex: 1; }
+.messages { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.msg { max-width: 75%; padding: 10px 14px; border-radius: 16px; font-size: 14px; word-wrap: break-word; }
+.msg.them { background: var(--bg-card); border: 1px solid var(--border-soft); align-self: flex-start; border-bottom-left-radius: 4px; }
+.msg.me { background: var(--accent); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+.msg-attachment { background: var(--bg-elev); border: 1px solid var(--border-soft); border-radius: 8px; padding: 10px 12px; font-size: 13px; }
+.chat-composer { background: var(--bg); border-top: 1px solid var(--border-soft); padding: 10px 14px; flex-shrink: 0; }
+.template-form { background: var(--bg-elev); border: 1px solid var(--border-soft); border-radius: 12px; padding: 12px; margin-bottom: 8px; }
+.template-title { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-weight: 500; }
+.template-form .input { margin-bottom: 6px; }
+.composer-row { display: flex; align-items: center; gap: 8px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 22px; padding: 6px; }
+.composer-input { flex: 1; border: none; outline: none; background: transparent; padding: 6px 12px; font-size: 14px; font-family: inherit; color: var(--text); }
+.attach-btn { width: 36px; height: 36px; border: none; background: var(--bg-elev); border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-mid); }
+.send-btn { width: 36px; height: 36px; border: none; background: var(--accent); border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; }
+.recruit-cta { display: flex; align-items: center; gap: 14px; padding: 16px 18px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); border-radius: 18px; cursor: pointer; margin-bottom: 14px; box-shadow: 0 6px 18px rgba(217, 119, 87, 0.28); position: relative; overflow: hidden; transition: transform 0.15s, box-shadow 0.15s; }
+.recruit-cta:active { transform: scale(0.99); box-shadow: 0 3px 10px rgba(217, 119, 87, 0.25); }
+.recruit-cta::before { content: ""; position: absolute; top: -30px; right: -20px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(255,255,255,0.2), transparent 70%); border-radius: 50%; pointer-events: none; }
+.recruit-icon { width: 44px; height: 44px; border-radius: 14px; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; }
+.recruit-icon svg { color: white; }
+.recruit-meta { flex: 1; min-width: 0; position: relative; }
+.recruit-title { font-size: 16px; font-weight: 600; color: white; letter-spacing: 0.02em; }
+.recruit-sub { font-size: 11px; color: rgba(255,255,255,0.85); margin-top: 2px; }
+.recruit-arrow { color: white; position: relative; opacity: 0.85; }
+.match-filter { display: flex; gap: 6px; margin-bottom: 12px; overflow-x: auto; scrollbar-width: none; }
+.match-filter::-webkit-scrollbar { display: none; }
+.mfchip { flex-shrink: 0; background: var(--bg-card); border: 1px solid var(--border); padding: 5px 12px; border-radius: 999px; font-size: 11px; cursor: pointer; white-space: nowrap; }
+.mfchip.active { background: var(--accent); color: white; border-color: var(--accent); }
+.recruit-modal { display: none; position: absolute; inset: 0; background: var(--bg); z-index: 80; flex-direction: column; }
+.recruit-modal.active { display: flex; }
+.recruit-modal-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: var(--bg); border-bottom: 1px solid var(--border-soft); flex-shrink: 0; }
+.recruit-modal-head .title { flex: 1; font-size: 16px; font-weight: 500; transition: color 0.2s; }
+.recruit-modal-body { flex: 1; overflow-y: auto; padding: 18px; }
+.recruit-form-row { margin-bottom: 14px; }
+.recruit-form-row label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; padding-left: 4px; font-weight: 500; }
+.recruit-form-row .input { width: 100%; padding: 12px 14px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-size: 14px; font-family: inherit; }
+.recruit-form-row .input:focus { outline: none; border-color: var(--accent); }
+.recruit-form-row textarea.input { min-height: 100px; resize: vertical; line-height: 1.6; }
+.recruit-form-row select.input { appearance: none; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%238a8a8a" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>'); background-repeat: no-repeat; background-position: right 14px center; padding-right: 40px; }
+.cat-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+.cat-pill { padding: 8px 14px; border-radius: 999px; border: 1.5px solid var(--border); background: var(--bg-card); font-size: 13px; cursor: pointer; transition: all 0.15s; }
+.cat-pill.active { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); font-weight: 500; }
+.cat-pill.active.green { background: rgba(107,142,90,0.12); color: var(--green); border-color: var(--green); }
+.cat-pill.active.purple { background: rgba(139,109,181,0.12); color: var(--purple); border-color: var(--purple); }
+.cat-banner { background: var(--accent-soft); border-left: 3px solid var(--accent); padding: 10px 14px; border-radius: 8px; font-size: 12px; color: var(--text-mid); margin-bottom: 14px; line-height: 1.6; transition: all 0.2s; }
+.cat-banner.green { background: rgba(107,142,90,0.10); border-left-color: var(--green); }
+.cat-banner.purple { background: rgba(139,109,181,0.10); border-left-color: var(--purple); }
+.recruit-modal-foot { padding: 14px 18px calc(14px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--border-soft); display: flex; gap: 8px; flex-shrink: 0; background: var(--bg); }
+.recruit-modal-foot .btn { padding: 12px; font-size: 14px; }
+.btn.green { background: var(--green); border-color: var(--green); color: white; }
+.btn.purple { background: var(--purple); border-color: var(--purple); color: white; }
+.lvl-selector { display: grid; grid-template-columns: 1fr; gap: 8px; }
+.lvl-card { background: var(--bg-card); border: 1.5px solid var(--border); border-radius: 14px; padding: 12px 14px; cursor: pointer; transition: all 0.15s; display: flex; align-items: flex-start; gap: 10px; }
+.lvl-card:active { transform: scale(0.99); }
+.lvl-card .lvl-mark { font-size: 20px; flex-shrink: 0; line-height: 1.2; }
+.lvl-card .lvl-meta { flex: 1; min-width: 0; }
+.lvl-card .lvl-name { font-size: 14px; font-weight: 600; }
+.lvl-card .lvl-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; line-height: 1.5; }
+.lvl-card .lvl-pill { display: inline-block; font-size: 10px; padding: 1px 7px; border-radius: 999px; margin-top: 4px; background: var(--bg-elev); color: var(--text-mid); }
+.lvl-card.active.a { background: rgba(107,142,90,0.10); border-color: var(--level-a); }
+.lvl-card.active.a .lvl-name { color: var(--level-a); }
+.lvl-card.active.b { background: rgba(200,158,58,0.10); border-color: var(--level-b); }
+.lvl-card.active.b .lvl-name { color: var(--level-b); }
+.lvl-card.active.c { background: rgba(90,122,158,0.10); border-color: var(--level-c); }
+.lvl-card.active.c .lvl-name { color: var(--level-c); }
+.match-card { background: var(--bg-card); border: 1px solid var(--border-soft); border-radius: 14px; padding: 14px; margin-bottom: 10px; cursor: pointer; }
+.match-tag { display: inline-block; background: var(--accent-soft); color: var(--accent); font-size: 10px; padding: 2px 8px; border-radius: 999px; margin-bottom: 6px; font-weight: 500; }
+.match-tag.green { background: rgba(107,142,90,0.12); color: var(--green); }
+.match-title { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
+.match-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; line-height: 1.5; }
+.match-meta { display: flex; gap: 12px; font-size: 11px; color: var(--text-muted); }
+.match-meta strong { color: var(--text); font-weight: 500; }
+.system-card { background: var(--bg-card); border: 1px solid var(--border-soft); border-radius: 14px; padding: 14px; margin-bottom: 10px; cursor: pointer; position: relative; border-left: 3px solid transparent; }
+.system-card.lvl-a { border-left-color: var(--level-a); }
+.system-card.lvl-b { border-left-color: var(--level-b); }
+.system-card.lvl-c { border-left-color: var(--level-c); }
+.lvl-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; padding: 2px 8px; border-radius: 999px; font-weight: 600; margin-bottom: 6px; }
+.lvl-badge.a { background: rgba(107,142,90,0.15); color: var(--level-a); }
+.lvl-badge.b { background: rgba(200,158,58,0.15); color: var(--level-b); }
+.lvl-badge.c { background: rgba(90,122,158,0.15); color: var(--level-c); }
+.system-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.system-title { font-size: 15px; font-weight: 500; flex: 1; }
+.system-stars { color: var(--yellow); font-size: 13px; }
+.system-author { font-size: 11px; color: var(--text-muted); margin: 4px 0 8px; }
+.system-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px; }
+.system-tags span { font-size: 10px; background: var(--bg-elev); padding: 2px 8px; border-radius: 999px; color: var(--text-mid); }
+.detail-screen { display: none; flex-direction: column; position: absolute; left: 0; right: 0; top: 0; bottom: 0; background: var(--bg); z-index: 25; }
+.detail-screen.active { display: flex; }
+.detail-header { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: var(--bg); border-bottom: 1px solid var(--border-soft); flex-shrink: 0; }
+.detail-content { flex: 1; overflow-y: auto; padding: 16px 18px; }
+.detail-section { background: var(--bg-card); border: 1px solid var(--border-soft); border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+.detail-section h4 { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+.detail-section p { font-size: 14px; line-height: 1.7; }
+.transfer-info { border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+.transfer-info.a { background: rgba(107,142,90,0.08); border: 1px solid rgba(107,142,90,0.3); }
+.transfer-info.b { background: rgba(200,158,58,0.08); border: 1px solid rgba(200,158,58,0.3); }
+.transfer-info.c { background: rgba(90,122,158,0.08); border: 1px solid rgba(90,122,158,0.3); }
+.transfer-title { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+.transfer-info.a .transfer-title { color: var(--level-a); }
+.transfer-info.b .transfer-title { color: var(--level-b); }
+.transfer-info.c .transfer-title { color: var(--level-c); }
+.transfer-list { list-style: none; }
+.transfer-list li { font-size: 12px; line-height: 1.7; padding: 2px 0; }
+.dl-btn { flex: 1; padding: 12px 14px; border-radius: 12px; cursor: pointer; font-size: 13px; font-family: inherit; font-weight: 600; border: 1.5px solid; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.dl-btn:active { transform: scale(0.98); }
+.dl-btn.a { background: var(--level-a); color: white; border-color: var(--level-a); }
+.dl-btn.b { background: var(--level-b); color: white; border-color: var(--level-b); }
+.dl-btn.c { background: var(--level-c); color: white; border-color: var(--level-c); }
+.dl-modal { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.5); z-index: 90; align-items: flex-end; }
+.dl-modal.active { display: flex; }
+.dl-sheet { background: var(--bg); width: 100%; max-height: 90%; border-radius: 22px 22px 0 0; padding: 6px 18px calc(20px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; overflow: hidden; }
+.dl-handle { width: 40px; height: 4px; background: var(--border); border-radius: 999px; margin: 8px auto 14px; flex-shrink: 0; }
+.dl-sheet-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+.dl-sheet-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
+.dl-sheet-body { flex: 1; overflow-y: auto; }
+.dl-section { background: var(--bg-card); border: 1px solid var(--border-soft); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; }
+.dl-section h5 { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; font-weight: 600; }
+.dl-section .row { font-size: 13px; line-height: 1.7; padding: 2px 0; }
+.dl-row-flex { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.dl-row-flex .lbl { font-size: 12px; color: var(--text-muted); }
+.dl-row-flex .val { font-size: 13px; font-weight: 500; }
+.dl-check { display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px; background: var(--bg-elev); border-radius: 10px; margin-top: 8px; cursor: pointer; transition: background 0.15s; }
+.dl-check:active { background: var(--bg-card); }
+.dl-check input { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; accent-color: var(--accent); }
+.dl-check .ck-text { font-size: 12px; line-height: 1.5; color: var(--text-mid); }
+.dl-foot { display: flex; gap: 8px; padding-top: 12px; border-top: 1px solid var(--border-soft); margin-top: 8px; flex-shrink: 0; }
+.dl-foot .btn { padding: 12px; font-size: 14px; font-weight: 500; }
+.review-item { padding: 10px 0; border-bottom: 1px solid var(--border-soft); }
+.review-item:last-child { border-bottom: none; }
+.review-head { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+.review-text { font-size: 13px; color: var(--text-mid); }
+.url-box { background: var(--bg-elev); border: 1px solid var(--border-soft); border-radius: 10px; padding: 10px 12px; font-family: monospace; font-size: 12px; display: flex; align-items: center; gap: 8px; word-break: break-all; }
+.url-box .url { flex: 1; color: var(--text-mid); }
+.copy-btn { background: var(--accent); color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 500; flex-shrink: 0; }
+.detail-actions { display: flex; gap: 8px; margin-top: 12px; }
+.btn { flex: 1; background: var(--bg-card); color: var(--text); border: 1px solid var(--border); padding: 10px 14px; border-radius: 12px; cursor: pointer; font-size: 13px; font-family: inherit; font-weight: 500; }
+.btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.status-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+.status-card { background: var(--bg-card); border: 1px solid var(--border-soft); border-radius: 12px; padding: 12px; text-align: center; }
+.status-num { font-size: 24px; font-weight: 600; color: var(--accent); }
+.status-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.status-list { list-style: none; }
+.status-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--bg-card); border: 1px solid var(--border-soft); border-radius: 12px; margin-bottom: 6px; }
+.status-icon { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.status-icon.done { background: rgba(107,142,90,0.15); color: var(--green); }
+.status-icon.wip { background: rgba(200,158,58,0.15); color: var(--yellow); }
+.status-icon.skill { background: rgba(90,122,158,0.15); color: var(--blue); }
+.status-name { flex: 1; font-size: 14px; }
+.status-pill { font-size: 10px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border-soft); color: var(--text-muted); }
+.save-list { list-style: none; }
+.save-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-card); border: 1px solid var(--border-soft); border-radius: 12px; margin-bottom: 8px; }
+.save-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--bg-elev); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.save-meta { flex: 1; min-width: 0; }
+.save-title { font-size: 14px; font-weight: 500; }
+.save-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.save-action { background: none; border: none; color: var(--accent); font-size: 12px; cursor: pointer; padding: 4px 8px; font-weight: 500; }
+.settings-hero { background: linear-gradient(135deg, #f5d8c2 0%, #f5ecde 60%, #ede0cc 100%); border: 1px solid var(--border-soft); border-radius: 20px; padding: 22px 20px; margin-bottom: 18px; position: relative; overflow: hidden; }
+.settings-hero::before { content: ""; position: absolute; top: -40px; right: -40px; width: 140px; height: 140px; background: radial-gradient(circle, rgba(217,119,87,0.18), transparent 70%); border-radius: 50%; pointer-events: none; }
+.hero-row { display: flex; align-items: center; gap: 14px; position: relative; }
+.hero-avatar { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent-2)); display: flex; align-items: center; justify-content: center; color: white; font-size: 26px; font-weight: 500; flex-shrink: 0; box-shadow: 0 4px 12px rgba(217,119,87,0.3); border: 3px solid white; }
+.hero-name { font-size: 20px; font-weight: 600; }
+.hero-meta { font-size: 12px; color: var(--text-mid); margin-top: 3px; }
+.hero-stars { font-size: 14px; margin-top: 6px; color: var(--yellow); letter-spacing: 0.04em; }
+.hero-stars .num { color: var(--text); font-weight: 600; margin-left: 4px; }
+.hero-stars .reviews { color: var(--text-muted); font-size: 11px; margin-left: 4px; }
+.feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.feature-card { background: var(--bg-card); border: 1px solid var(--border-soft); border-radius: 16px; padding: 14px; }
+.feature-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 8px; background: var(--accent-soft); color: var(--accent); }
+.feature-icon.b { background: rgba(90,122,158,0.12); color: var(--blue); }
+.feature-icon.g { background: rgba(107,142,90,0.12); color: var(--green); }
+.feature-icon.y { background: rgba(200,158,58,0.12); color: var(--yellow); }
+.feature-icon.p { background: rgba(139,109,181,0.12); color: var(--purple); }
+.feature-icon.r { background: rgba(199,90,79,0.12); color: var(--red); }
+.feature-name { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+.feature-desc { font-size: 11px; color: var(--text-muted); line-height: 1.6; }
+.tabbar { display: flex; background: var(--bg); border-top: 1px solid var(--border-soft); padding: 8px 4px calc(8px + env(safe-area-inset-bottom, 0px)); flex-shrink: 0; }
+.tabbar-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 2px; cursor: pointer; color: var(--text-muted); font-size: 10px; transition: color 0.15s; }
+.tabbar-item.active { color: var(--accent); }
+.tabbar-item svg { width: 22px; height: 22px; }
+.toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--text); color: var(--bg); padding: 10px 18px; border-radius: 999px; font-size: 13px; z-index: 1000; transition: transform 0.3s; pointer-events: none; white-space: nowrap; }
+.toast.show { transform: translateX(-50%) translateY(0); }
+.input { width: 100%; padding: 10px 14px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-size: 13px; font-family: inherit; }
+</style>
+</head>
+<body>
+<div class="phone">
+  <header class="topbar" id="topbarNormal">
+    <button class="icon-btn" onclick="openDrawer()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+    <div class="topbar-title"><span class="mark serif">✱</span> <span class="serif">アンソロウ</span></div>
+    <button class="icon-btn" onclick="openSettings()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/></svg></button>
+  </header>
+  <main id="mainScroll">
+    <section class="panel active" id="talk">
+      <div class="segment"><div class="segment-item active" onclick="switchSegment(this, 'chat')">チャット</div><div class="segment-item" onclick="switchSegment(this, 'matching')">マッチング</div></div>
+      <div id="seg-chat"><ul class="chat-list" id="chatList"></ul></div>
+      <div id="seg-matching" style="display:none;">
+        <div class="recruit-cta" onclick="openRecruit()"><div class="recruit-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><div class="recruit-meta"><div class="recruit-title">投稿する</div><div class="recruit-sub">システム開発・案件募集・システム公開を投稿</div></div><svg class="recruit-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="9 18 15 12 9 6"/></svg></div>
+        <div class="match-filter"><div class="mfchip active" onclick="filterMatch(this, 'all')">すべて</div><div class="mfchip" onclick="filterMatch(this, 'dev')">システム開発</div><div class="mfchip" onclick="filterMatch(this, 'job')">案件募集</div></div>
+        <div id="matchingList"></div>
+      </div>
+    </section>
+    <section class="panel search-panel" id="search">
+      <div class="greeting-area" id="greetingArea">
+        <svg class="spark-mark" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z"/></svg>
+        <div class="greeting-text serif"><span id="greetingMain">おはようございます。<br>どのようなご用件でしょうか。</span></div>
+      </div>
+      <div class="search-results" id="searchResults">
+        <div class="level-filter">
+          <div class="lfchip active" onclick="filterLevel(this, 'all')">すべて</div>
+          <div class="lfchip" onclick="filterLevel(this, 'a')">🟢 運営保証</div>
+          <div class="lfchip" onclick="filterLevel(this, 'b')">🟡 再構築</div>
+          <div class="lfchip" onclick="filterLevel(this, 'c')">🔵 データ</div>
+        </div>
+        <div class="results-head" id="resultsHead">検索結果</div>
+        <div id="systemList"></div>
+      </div>
+      <div class="search-composer">
+        <div class="search-composer-inner">
+          <button class="composer-add" onclick="showToast('+ 添付・カテゴリ選択')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+          <input class="search-composer-input" id="searchInput" placeholder="アンソロウとチャット" oninput="onSearchInput()" onkeydown="if(event.key==='Enter')submitSearch()">
+          <button class="composer-wave" onclick="submitSearch()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="7" y1="9" x2="7" y2="15"/><line x1="11" y1="6" x2="11" y2="18"/><line x1="15" y1="9" x2="15" y2="15"/></svg></button>
+        </div>
+      </div>
+    </section>
+    <section class="panel" id="status">
+      <div class="panel-head"><h2 class="serif">ステータス管理</h2><p>実装済 / 実装材料 / 専門スキル</p></div>
+      <div class="status-grid"><div class="status-card"><div class="status-num">5</div><div class="status-label">実装済</div></div><div class="status-card"><div class="status-num">3</div><div class="status-label">実装材料</div></div><div class="status-card"><div class="status-num">8</div><div class="status-label">専門スキル</div></div></div>
+      <div style="font-size:12px;color:var(--text-muted);margin:14px 0 6px;padding:0 4px;">実装済</div><ul class="status-list" id="statusDone"></ul>
+      <div style="font-size:12px;color:var(--text-muted);margin:14px 0 6px;padding:0 4px;">実装材料</div><ul class="status-list" id="statusWip"></ul>
+      <div style="font-size:12px;color:var(--text-muted);margin:14px 0 6px;padding:0 4px;">専門スキル</div><ul class="status-list" id="statusSkill"></ul>
+    </section>
+    <section class="panel" id="save">
+      <div class="segment"><div class="segment-item active" onclick="switchSaveSegment(this, 'fav')">お気に入り</div><div class="segment-item" onclick="switchSaveSegment(this, 'dl')">ダウンロード</div><div class="segment-item" onclick="switchSaveSegment(this, 'history')">履歴</div></div>
+      <ul class="save-list" id="saveFav"></ul><ul class="save-list" id="saveDL" style="display:none;"></ul><ul class="save-list" id="saveHistory" style="display:none;"></ul>
+    </section>
+    <section class="panel" id="settings">
+      <div class="settings-hero"><div class="hero-row"><div class="hero-avatar">樋</div><div style="flex:1;min-width:0;"><div class="hero-name">樋口</div><div class="hero-meta">不動産営業 · 開発者 · 依頼者</div><div class="hero-stars">★ ★ ★ ★ ★ <span class="num">4.9</span><span class="reviews">23件のレビュー</span></div></div></div></div>
+      <div style="font-size:11px;color:var(--text-muted);font-weight:600;letter-spacing:0.1em;text-transform:uppercase;margin:22px 4px 10px;">ソフトの機能</div>
+      <div class="feature-grid">
+        <div class="feature-card"><div class="feature-icon">💬</div><div class="feature-name">LINEレベルチャット</div><div class="feature-desc">画像・動画・ファイル添付</div></div>
+        <div class="feature-card"><div class="feature-icon b">🤝</div><div class="feature-name">マッチング</div><div class="feature-desc">システム開発+案件募集</div></div>
+        <div class="feature-card"><div class="feature-icon g">🔍</div><div class="feature-name">3層譲渡スキーム</div><div class="feature-desc">運営保証/再構築/データ</div></div>
+        <div class="feature-card"><div class="feature-icon p">🏠</div><div class="feature-name">不動産CRM</div><div class="feature-desc">物件・顧客・追客を一画面</div></div>
+        <div class="feature-card"><div class="feature-icon p">📊</div><div class="feature-name">利回り計算</div><div class="feature-desc">表面/実質/NOI/IRR</div></div>
+        <div class="feature-card"><div class="feature-icon b">📝</div><div class="feature-name">提案書作成</div><div class="feature-desc">物件提案テンプレート</div></div>
+      </div>
+    </section>
+  </main>
+  <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+  <aside class="drawer" id="drawer">
+    <div class="drawer-head" onclick="goSettingsTop()"><div class="av">樋</div><div class="meta"><div class="name">樋口</div><div class="hint">プロフィール・レビュー</div></div><span class="stars">★ 4.9</span><span class="arrow">›</span></div>
+    <ul class="drawer-menu">
+      <div class="drawer-section">メイン</div>
+      <li onclick="goPanel('talk')"><div class="ico">💬</div>トーク</li>
+      <li onclick="goPanel('search')"><div class="ico">🔍</div>検索</li>
+      <li onclick="goPanel('status')"><div class="ico">📊</div>状態</li>
+      <li onclick="goPanel('save')"><div class="ico">⭐</div>保存</li>
+      <div class="drawer-section">設定</div>
+      <li onclick="openSettings();closeDrawer();"><div class="ico">⚙️</div>ソフトの機能</li>
+    </ul>
+    <div class="drawer-foot"><span>v0.7 · 2026-04-29</span><span style="color:var(--green);">● 同期中</span></div>
+  </aside>
+  <div class="recruit-modal" id="recruitModal">
+    <div class="recruit-modal-head"><button class="chat-back" onclick="closeRecruit()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="title" id="rModalTitle">投稿する</div></div>
+    <div class="recruit-modal-body">
+      <div class="recruit-form-row"><label>投稿カテゴリ <span style="color:var(--accent);">*</span></label><div class="cat-pills" id="rCatPills"><div class="cat-pill active" data-cat="dev" onclick="selectCat(this)">システム開発</div><div class="cat-pill" data-cat="job" onclick="selectCat(this)">案件募集</div><div class="cat-pill" data-cat="publish" onclick="selectCat(this)">システム公開</div></div></div>
+      <div class="cat-banner" id="rBanner">💻 開発者にエンジニアリング案件を依頼します</div>
+      <div id="rPublishBlock" style="display:none;">
+        <div class="recruit-form-row">
+          <label>譲渡レベル <span style="color:var(--accent);">*</span></label>
+          <div class="lvl-selector" id="rLvlSelector">
+            <div class="lvl-card a" data-lvl="a" onclick="selectLevel(this)"><div class="lvl-mark">🟢</div><div class="lvl-meta"><div class="lvl-name">運営保証可能 (Level A)</div><div class="lvl-desc">即運用OK・引継ぎ後30日サポート付・動作保証</div><span class="lvl-pill">エスクロー 30日</span></div></div>
+            <div class="lvl-card b" data-lvl="b" onclick="selectLevel(this)"><div class="lvl-mark">🟡</div><div class="lvl-meta"><div class="lvl-name">再構築必要 (Level B)</div><div class="lvl-desc">部品・素材として有用・改修工数あり</div><span class="lvl-pill">エスクロー 14日</span></div></div>
+            <div class="lvl-card c" data-lvl="c" onclick="selectLevel(this)"><div class="lvl-mark">🔵</div><div class="lvl-meta"><div class="lvl-name">データ (Level C)</div><div class="lvl-desc">スキル・ノウハウ・テンプレート・専門知識</div><span class="lvl-pill">エスクロー 7日</span></div></div>
+          </div>
+        </div>
+        <div id="rLvlA" style="display:none;"><div class="recruit-form-row"><label>運営マニュアルURL <span style="color:var(--accent);">*</span></label><input class="input" id="rManualUrl" placeholder="例: https://docs.anthrou.app/realestate-crm"></div><div class="recruit-form-row"><label>サポート 期間</label><input class="input" id="rSupport" placeholder="例: 30日間 / 60日間"></div><div class="recruit-form-row"><label>引継ぎ条件</label><input class="input" id="rHandover" placeholder="例: アカウント引渡 + 操作研修1回"></div></div>
+        <div id="rLvlB" style="display:none;"><div class="recruit-form-row"><label>設計図URL <span style="color:var(--accent);">*</span></label><input class="input" id="rDesignUrl" placeholder="例: https://github.com/.../design.md"></div><div class="recruit-form-row"><label>残課題</label><input class="input" id="rImssues" placeholder="例: 認譼未実装"></div><div class="recruit-form-row"><label>改修工数の推定</label><input class="input" id="rEffort" placeholder="例: 約40時間"></div></div>
+        <div id="rLvlC" style="display:none;"><div class="recruit-form-row"><label>出典 <span style="color:var(--accent);">*</span></label><input class="input" id="rSource" placeholder="例: 樋口の不動産営業20年経顓"></div><div class="recruit-form-row"><label>利用範囲</label><input class="input" id="rScope" placeholder="例: 商用利用可"></div><div class="recruit-form-row"><label>著古檩表禺</label><input class="input" id="rCopyright" placeholder="例: © 2026 樋口"></div></div>
+      </div>
+      <div class="recruit-form-row"><label id="rTitleLabel">案件タイトル <span style="color:var(--accent);">*</span></label><input class="input" id="rTitle" placeholder="例: 不動産CRM新規開発"></div>
+      <div class="recruit-form-row"><label id="rBudgetLabel">予算</label><input class="input" id="rBudget" placeholder="例: 80万円〜"></div>
+      <div class="recruit-form-row"><label id="rDeadlineLabel">納期</label><input class="input" id="rDeadline" placeholder="例: 2ヶ月以内"></div>
+      <div class="recruit-form-row"><label id="rSkillsLabel">必要スキル</label><input class="input" id="rSkills" placeholder="例: React, iOS"></div>
+      <div class="recruit-form-row"><label id="rDescLabel">詳細 <span style="color:var(--accent);">*</span></label><textarea class="input" id="rDesc" placeholder="案件の概要・背景・期待する成果物など炒記辉"></textarea></div>
+      <div id="rPublishExtra" style="display:none;"><div class="recruit-form-row"><label>GitHub URL</label><input class="input" id="rGithub" placeholder="例: https://github.com/anthrou/your-system"></div><div class="recruit-form-row"><label>タグ (CSV)￼/label><input class="input" id="rPubTags" placeholder="例: React, iOS, OSS"></div></div>
+    </div>
+    <div class="recruit-modal-foot"><button class="btn" onclick="closeRecruit()">キャンセル</button><button class="btn primary" id="rSubmitBtn" onclick="submitRecruit()">公開する</button></div>
+  </div>
+  <div class="detail-screen" id="systemDetail"><div class="detail-header"><button class="chat-back" onclick="closeDetail()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="15 18 9 12 15 6"/></svg></button><div style="flex:1;font-size:15px;font-weight:500;" id="detailTitle">—</div></div><div class="detail-content" id="detailContent"></div></div>
+  <div class="dl-modal" id="dlModal" onclick="if(event.target===this)closeDownload()">
+    <div class="dl-sheet">
+      <div class="dl-handle"></div>
+      <div class="dl-sheet-title" id="dlTitle">ダウンロード</div>
+      <div class="dl-sheet-sub" id="dlSub">语릸レベルを確認してください</div>
+      <div class="dl-sheet-body" id="dlBody"></div>
+      <div class="dl-foot"><button class="btn" onclick="closeDownload()">キャンセル</button><button class="btn primary" id="dlConfirmBtn" onclick="confirmDownload()" disabled>ダウンロード</button></div>
+    </div>
+  </div>
+  <nav class="tabbar">
+    <div class="tabbar-item active" data-panel="talk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>トーク</span></div>
+    <div class="tabbar-item" data-panel="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>検索</span></div>
+    <div class="tabbar-item" data-panel="status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span>状態</span></div>
+    <div class="tabbar-item" data-panel="save"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg><span>保存</span></div>
+  </nav>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const TRANSFER_LEVELS = {
+  a: { label: '🟢 運営保証可能', escrowDays: 30, class: 'a', desc: '即運用可能なシステム本体。譲受後すぐに程働可', responsibilities: ['✅ 動作保証(引継ぎ時点で完全稱协)','✅ 設計書・運用マニュアル完備','✅ 引継ぎ後30日間の質問対応','✅ バグ修正対応(30日)','⏱ エスクロー: 30日'], dlNote: 'このシステムは運用保証付きです。引継ぎ後30日間は質問対応・バグ修正に対応します。'},
+  b: { label: '🟡 再構築必要', escrowDays: 14, class: 'b', desc: '部品・素材として有用。再構築・改修が必要', responsibilities: ['⚠ 動作保証なし(原状報告)','✅ 設計意国の説明','⚠ 残課題リストを提供 ','⚠ 放修工数の推定提示','⏱ エスクロー: 14日'], dlNote: 'このシステムは「素材」として提供されます。動作保証はありません。'},
+  c: { label: '🔵 データ', escrowDays: 7, class: 'c', desc: 'スキル・ノウハウ・市場知識・テンプレート', responsibilities: ['📚 出典の明示','✅ 利用範团の明示','⚠ 著作権表示の遵宙','❌ 動作保証なし','⏱ エスクロー: 7日'], dlNote: 'このデータの著作樚・出典・利用範囲を確認の上ご利用ください。'},
+};
+const CHATS = [
+  { id: 1, name: '田中 開発', cls: '', last: '了解です。 仕様書確認しました ✗', time: '今', unread: 2, role: 'dev' },
+  { id: 2, name: 'リコー不動産 山田', cls: 'b2', last: 'CRM要件まとめました', time: '14:30', unread: 0 },
+  { id: 3, name: '札幌中央 鈴木様', cls: 'b3', last: '内見日時の確認お願いします', time: '昨日', unread: 1 },
+  { id: 4, name: '提案書テンプレ通知', cls: 'b4', last: '利回り比較表v1更新', time: '昨日', unread: 0 },
+];
+const MATCHES = [
+  { type: 'dev', tag: 'システム開発', tagCls: '', title: '不動産CRM 新規開発', desc: '物件管理+顧客管理+追客自動化', budget: '80万〜', deadline: '2ヶ月', skills: 'React・iOS' },
+  { type: 'dev', tag: 'システム開発', tagCls: '', title: '飲食店在庫管理アプリ', desc: 'バーコード読取+発注連携', budget: '50万〜', deadline: '6週間', skills: 'iOS' },
+  { type: 'job', tag: '案件募集', tagCls: 'green', title: '都心マンション販売 営業協力', desc: '内見対応・契約書類サポート', budget: '応相談', deadline: '随時', skills: '宅建' },
+  { type: 'job', tag: '案件募集', tagCls: 'green', title: '不動産投資セミナー登壇者募集', desc: '初心者向け利回り講座', budget: '5万円/回〜', deadline: '次回6月', skills: '講師・FP' },
+];
+const SYSTEMS = [
+  { cat: 'realestate', level: 'a', title: 'アンソロウ マーケットプレイス', author: '樋口 / v0.7', stars: 5, reviews: 12, tags: ['Web','PWA'], desc: '4タブ統合・公開URL稼働中', purpose: 'システム開発マッチング', github: 'https://github.com/anthrou/marketplace-app' },
+  { cat: 'realestate', level: 'b', title: '不動産CRM (アンソロウ版)', author: '樋口 / v0.1', stars: 5, reviews: 12, tags: ['React','iOS'], desc: '物件・顧客・追客を一画面で', purpose: '不動産営業の事務負荷を最小化', github: 'https://github.com/anthrou/realestate-crm' },
+  { cat: 'realestate', level: 'c', title: '利回り計算エンジン', author: '樋口 / v0.2', stars: 4, reviews: 8, tags: ['JS','OSS'], desc: '表面・実質・NOI・IRRを算出', purpose: '不動産投資判断を秒速化', github: 'https://github.com/anthrou/yield-calc' },
+  { cat: 'realestate', level: 'a', title: '物件提案書テンプレート', author: '樋口 / v1.0', stars: 5, reviews: 18, tags: ['Word','テンプレ'], desc: '札幌中央区マンション提案書サンプル付き', purpose: '営業現場で即使える提案書フォーマット', github: 'https://github.com/anthrou/proposal-template', publishedAt: '2026-04-29', justPosted: true, price: { from: 3000, label: '¥3,000/月〜', plans: [{name:'月額',price:'¥3,000/月'},{name:'個人',price:'¥30,000'},{name:'法人',price:'¥100,000'}] }, publish: { manualUrl: 'docs/proposal-template/manual.md', supportPeriod: '引継ぎ後30日間', supportContact: 'kanri09072111100@gmail.com', handoverConditions: ['アンソロウNFT会員バッジ保有', 'Word/Excel基本操作可能'], handoverCompletion: ['物件情報差替えで提案書即作成', '利回り比較表との連携'], escrowDays: 30, environment: 'Microsoft Word 2019以上', license: 'Commercial' } },
+  { cat: 'realestate', level: 'b', title: '利回り比較表テンプレ', author: '樋口 / v1.0', stars: 4, reviews: 5, tags: ['Excel','テンプレ'], desc: '5物件並列比較・表面/実質/NOI/IRR算出', purpose: '不動産投資判断の見える化', github: 'https://github.com/anthrou/yield-template', price: { from: 0, label: '¥0(無料) / ¥10,000', plans: [{name:'無料版',price:'¥0'},{name:'素材',price:'¥10,000'},{name:'支援パック',price:'¥20,000'}] } },
+  { cat: 'mobile', level: 'a', title: 'APIマッチ iOSランチャー', author: '樋口 / v1.7.2', stars: 5, reviews: 3, tags: ['Capacitor','iOS'], desc: 'ワンクリックビルド→Xcode', purpose: 'iOS初期セットアップ30秒化', github: 'https://github.com/anthrou/apimatch-launcher' },
+  { cat: 'opensource', level: 'a', title: '3版リテンション バックアップ', author: '樋口 / v0.1', stars: 5, reviews: 7, tags: ['Bash','OSS'], desc: 'v1/v2/v3 自動シフト', purpose: '一流データセンター級', github: 'https://github.com/anthrou/3v-backup' },
+];
+const STATUS_DONE = [{ name: '3版リテンション バックアップ', tag: 'v0.1' },{ name: '物件提案書テンプレート', tag: 'v1.0' },{ name: '利回り比較表テンプレ', tag: 'v1.0' },{ name: 'アンソロウ マーケットプレイス', tag: 'v0.7' },{ name: '3層譲渡スキーム', tag: 'v0.7' }];
+const STATUS_WIP = [{ name: '実機ビルド + TestFlight', tag: '設計中' },{ name: 'Phase 1 NFT会員制', tag: '設計済' },{ name: 'Stripe決済統合', tag: '計画' }];
+const STATUS_SKILL = [{ name: '不動産営業', tag: '実務' },{ name: '利回り計算 / IRR', tag: '実務' },{ name: 'iOS開発', tag: '中級' },{ name: 'Bashスクリプト', tag: '中級' },{ name: 'AI応答設計', tag: '実務' },{ name: '承認フロー設計', tag: '中級' },{ name: 'GitHub OSS運営', tag: '初級' },{ name: 'マッチング企画', tag: '中級' }];
+const SAVE_FAV = [{ icon: '🏠', title: '不動産CRM', sub: 'お気に入り 2日前' },{ icon: '📝', title: '物件提案書テンプレート', sub: 'お気に入り 5時間前' }];
+const SAVE_DL = [{ icon: '⬇️', title: '利回り計算エンジン v0.2', sub: '2026-04-26 · 🔵 データ' },{ icon: '⬇️', title: '3版バックアップ v0.1', sub: '2026-04-28 · 🟢 運営保証' }];
+const SAVE_HISTORY = [{ icon: '🔗', title: 'github.com/anthrou/proposal-template', sub: '2分前' },{ icon: '🔗', title: 'github.com/anthrou/yield-template', sub: '1時間前' },{ icon: '🔗', title: 'github.com/anthrou/realestate-crm', sub: '昨日' }];
+const CAT_PRESET = {
+  dev: { modalTitle: 'システム開発を募集する', banner: '💻 開発者にエンジニアリング案件を依頼します', titleLabel: '案件タイトル', titlePh: '例: 不動産CRM新規開発', budgetLabel: '予算', budgetPh: '例: 80万円〜', deadlineLabel: '納期', deadlinePh: '例: 2ヶ月以内', skillsLabel: '必要スキル', skillsPh: '例: React, iOS', descLabel: '詳細', descPh: '案件概要を記載', submitText: '公開する', bannerCls: '', submitCls: '' },
+  job: { modalTitle: '案件募集を投稿する', banner: '🤝 業務全般の協力者を募ります', titleLabel: '案件タイトル', titlePh: '例: 営業協力', budgetLabel: '報酬', budgetPh: '例: 5万円/回', deadlineLabel: '期間', deadlinePh: '例: 随時', skillsLabel: '必要条件', skillsPh: '例: 宅建', descLabel: '詳細', descPh: '案件概要を記載', submitText: '案件募集を公開', bannerCls: 'green', submitCls: 'green' },
+  publish: { modalTitle: 'システムを公開する', banner: '🚀 完成済システム・素材・データを譲渡レベル付で公開します', titleLabel: 'システム名', titlePh: '例: 不動産CRM v1.0', budgetLabel: '価格', budgetPh: '例: 無料 / 5万円', deadlineLabel: 'バージョン', deadlinePh: '例: v1.0', skillsLabel: '必要環境', skillsPh: '例: Node 20+', descLabel: 'システム説明', descPh: '機能・設計思想を記載', submitText: 'システムを公開', bannerCls: 'purple', submitCls: 'purple' }
+};
+function getGreeting() { const h = new Date().getHours(); if (h>=5&&h<11) return 'おはようございます。<br>どのようなご用件でしょうか。'; if (h>=11&&h<17) return 'こんにちは。<br>どのようなご用件でしょうか。'; if (h>=17&&h<22) return 'こんばんは。<br>どのようなご用件でしょうか。'; return '夜分にお疲れさまです。<br>どのようなご用件でしょうか。'; }
+document.getElementById('greetingMain').innerHTML = getGreeting();
+function openDrawer() { document.getElementById('drawer').classList.add('show'); document.getElementById('drawerOverlay').classList.add('show'); }
+function closeDrawer() { document.getElementById('drawer').classList.remove('show'); document.getElementById('drawerOverlay').classList.remove('show'); }
+function goPanel(name) {
+  closeDrawer();
+  document.querySelectorAll('.tabbar-item').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(name).classList.add('active');
+  const tab = document.querySelector(`.tabbar-item[data-panel="${name}"]`);
+  if (tab) tab.classList.add('active');
+  closeDetail();
+}
+function goSettingsTop() { closeDrawer(); openSettings(); }
+document.querySelectorAll('.tabbar-item').forEach(t => t.addEventListener('click', () => goPanel(t.dataset.panel)));
+function openSettings() { document.querySelectorAll('.tabbar-item').forEach(x => x.classList.remove('active')); document.querySelectorAll('.panel').forEach(p => p.classList.remove('active')); document.getElementById('settings').classList.add('active'); }
+function switchSegment(el, key) { el.parentElement.querySelectorAll('.segment-item').forEach(x => x.classList.remove('active')); el.classList.add('active'); document.getElementById('seg-chat').style.display = key === 'chat' ? 'block' : 'none'; document.getElementById('seg-matching').style.display = key === 'matching' ? 'block' : 'none'; }
+function switchSaveSegment(el, key) { el.parentElement.querySelectorAll('.segment-item').forEach(x => x.classList.remove('active')); el.classList.add('active'); document.getElementById('saveFav').style.display = key === 'fav' ? 'block' : 'none'; document.getElementById('saveDL').style.display = key === 'dl' ? 'block' : 'none'; document.getElementById('saveHistory').style.display = key === 'history' ? 'block' : 'none'; }
+const chatList = document.getElementById('chatList');
+CHATS.forEach(c => { const li = document.createElement('li'); li.className = 'chat-row'; li.innerHTML = `<div class="avatar ${c.cls}">${c.name[0]}</div><div class="chat-meta"><div class="chat-name">${c.name}<span class="chat-time">${c.time}</span></div><div class="chat-preview">${c.last}${c.unread ? `<span class="unread">${c.unread}</span>` : ''}</div></div>`; chatList.appendChild(li); });
+let currentMatchFilter = 'all';
+function renderMatches() {
+  const list = document.getElementById('matchingList'); list.innerHTML = '';
+  const filtered = currentMatchFilter === 'all' ? MATCHES : MATCHES.filter(m => m.type === currentMatchFilter);
+  filtered.forEach(m => {
+    const card = document.createElement('div'); card.className = 'match-card';
+    const m1 = m.type === 'dev' ? '予算' : '報酬'; const m2 = m.type === 'dev' ? '納期' : '期間'; const sk = m.type === 'dev' ? '必要' : '条件';
+    card.innerHTML = `<span class="match-tag ${m.tagCls}">${m.tag}</span><div class="match-title">${m.title}</div><div class="match-desc">${m.desc}</div><div class="match-meta"><div>${m1} <strong>${m.budget}</strong></div><div>${m2} <strong>${m.deadline}</strong></div></div><div style="font-size:11px;color:var(--text-muted);margin-top:6px;">${sk}: ${m.skills}</div>`;
+    card.onclick = () => showToast('応募する');
+    list.appendChild(card);
+  });
+}
+function filterMatch(el, key) { el.parentElement.querySelectorAll('.mfchip').forEach(x => x.classList.remove('active')); el.classList.add('active'); currentMatchFilter = key; renderMatches(); }
+renderMatches();
+let recruitCat = 'dev';
+let publishLevel = null;
+function applyRecruitPreset() {
+  const p = CAT_PRESET[recruitCat];
+  document.getElementById('rModalTitle').textContent = p.modalTitle;
+  const banner = document.getElementById('rBanner'); banner.textContent = p.banner; banner.className = 'cat-banner ' + p.bannerCls;
+  document.getElementById('rTitleLabel').innerHTML = p.titleLabel + ' <span style="color:var(--accent);">*</span>'; document.getElementById('rTitle').placeholder = p.titlePh;
+  document.getElementById('rBudgetLabel').textContent = p.budgetLabel; document.getElementById('rBudget').placeholder = p.budgetPh;
+  document.getElementById('rDeadlineLabel').textContent = p.deadlineLabel; document.getElementById('rDeadline').placeholder = p.deadlinePh;
+  document.getElementById('rSkillsLabel').textContent = p.skillsLabel; document.getElementById('rSkills').placeholder = p.skillsPh;
+  document.getElementById('rDescLabel').innerHTML = p.descLabel + ' <span style="color:var(--accent);">*</span>'; document.getElementById('rDesc').placeholder = p.descPh;
+  const btn = document.getElementById('rSubmitBtn'); btn.textContent = p.submitText; btn.className = 'btn primary ' + p.submitCls;
+  document.getElementById('rPublishBlock').style.display = (recruitCat === 'publish') ? 'block' : 'none';
+  document.getElementById('rPublishExtra').style.display = (recruitCat === 'publish') ? 'block' : 'none';
+}
+function openRecruit() { document.getElementById('recruitModal').classList.add('active'); applyRecruitPreset(); }
+function closeRecruit() { document.getElementById('recruitModal').classList.remove('active'); }
+function selectCat(el) { el.parentElement.querySelectorAll('.cat-pill').forEach(x => { x.classList.remove('active','green','purple'); }); el.classList.add('active'); recruitCat = el.dataset.cat; if (recruitCat==='job') el.classList.add('green'); if (recruitCat==='publish') el.classList.add('purple'); applyRecruitPreset(); }
+function selectLevel(el) { el.parentElement.querySelectorAll('.lvl-card').forEach(x => x.classList.remove('active')); el.classList.add('active'); publishLevel = el.dataset.lvl; ['rLvlA','rLvlB','rLvlC'].forEach(id => document.getElementById(id).style.display = 'none'); document.getElementById('rLvl' + publishLevel.toUpperCase()).style.display = 'block'; }
+function submitRecruit() {
+  const title = document.getElementById('rTitle').value.trim();
+  const desc = document.getElementById('rDesc').value.trim();
+  if (!title || !desc) { showToast('必須項目を入力'); return; }
+  if (recruitCat === 'publish') {
+    if (!publishLevel) { showToast('譲渡レベルを選択'); return; }
+    const tagsRaw = document.getElementById('rPubTags').value || '';
+    const tags = tagsRaw.split(',').map(s => s.trim()).filter(Boolean);
+    if (!tags.length) tags.push('OSS');
+    SYSTEMS.unshift({ cat: 'opensource', level: publishLevel, title: title, author: '樋口 / ' + (document.getElementById('rDeadline').value || 'v0.1'), stars: 5, reviews: 0, tags: tags, desc: desc.length>60 ? desc.substring(0,60)+'…' : desc, purpose: desc, github: document.getElementById('rGithub').value || 'https://github.com/anthrou/' });
+    renderSearchResults(currentQuery || ' ');
+    showToast('✓ ' + TRANSFER_LEVELS[publishLevel].label + ' で公開');
+  } else {
+    MATCHES.unshift({ type: recruitCat, tag: recruitCat === 'dev' ? 'システム開発' : '案件募集', tagCls: recruitCat === 'dev' ? '' : 'green', title: title, desc: desc.length>60 ? desc.substring(0,60)+'…' : desc, budget: document.getElementById('rBudget').value || '応相談', deadline: document.getElementById('rDeadline').value || '応相談', skills: document.getElementById('rSkills').value || '応相談' });
+    renderMatches();
+    showToast('✓ 公開しました');
+  }
+  ['rTitle','rBudget','rDeadline','rSkills','rDesc','rManualUrl','rSupport','rHandover','rDesignUrl','rIssues','rEffort','rSource','rScope','rCopyright','rGithub','rPubTags'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  publishLevel = null;
+  document.querySelectorAll('#rLvlSelector .lvl-card').forEach(x => x.classList.remove('active'));
+  ['rLvlA','rLvlB','rLvlC'].forEach(id => document.getElementById(id).style.display = 'none');
+  closeRecruit();
+}
+let currentLevel = 'all';
+let currentQuery = '';
+function filterLevel(el, key) { el.parentElement.querySelectorAll('.lfchip').forEach(x => { x.classList.remove('active','a','b','c'); }); el.classList.add('active'); if (key !== 'all') el.classList.add(key); currentLevel = key; document.getElementById('greetingArea').style.display = 'none'; document.getElementById('searchResults').classList.add('show'); renderSearchResults(currentQuery || ' '); }
+function onSearchInput() { const v = (document.getElementById('searchInput').value || '').trim(); currentQuery = v; const greeting = document.getElementById('greetingArea'); const results = document.getElementById('searchResults'); if (!v && currentLevel === 'all') { greeting.style.display = 'flex'; results.classList.remove('show'); return; } greeting.style.display = 'none'; results.classList.add('show'); renderSearchResults(v); }
+function submitSearch() { const v = (document.getElementById('searchInput').value || '').trim(); if (!v) { showToast('キーワードを入力'); return; } onSearchInput(); }
+function renderSearchResults(q) {
+  const ql = (q || '').toLowerCase();
+  const list = document.getElementById('systemList');
+  const head = document.getElementById('resultsHead');
+  list.innerHTML = '';
+  let matched = SYSTEMS;
+  if (currentLevel !== 'all') matched = matched.filter(s => s.level === currentLevel);
+  matched = [...matched].sort((a, b) => (b.justPosted ? 1 : 0) - (a.justPosted ? 1 : 0));
+  if (ql && ql !== ' ') matched = matched.filter(s => s.title.toLowerCase().includes(ql) || s.tags.join(' ').toLowerCase().includes(ql) || s.desc.toLowerCase().includes(ql));
+  const levelLabel = currentLevel === 'all' ? '' : ` · ${TRANSFER_LEVELS[currentLevel].label}`;
+  head.textContent = q && q !== ' ' ? `「${q}」の検索結果 — ${matched.length}件${levelLabel}` : `全システム ${matched.length}件${levelLabel}`;
+  if (!matched.length) { list.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px 20px;font-size:13px;">該当なし</div>'; return; }
+  matched.forEach(s => {
+    const lvl = TRANSFER_LEVELS[s.level];
+    const card = document.createElement('div'); card.className = 'system-card lvl-' + s.level;
+    const newBadge = s.justPosted ? '<span style="background:var(--accent);color:white;font-size:9px;font-weight:600;padding:1px 6px;border-radius:999px;margin-left:6px;">NEW</span>' : '';
+    const skillBadge = s.skillPackage ? '<span style="background:var(--purple);color:white;font-size:9px;font-weight:600;padding:1px 6px;border-radius:999px;margin-left:4px;">📦 Skill</span>' : '';
+    const priceBadge = s.price ? `<span style="background:rgba(217,119,87,0.12);color:var(--accent);font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;margin-top:6px;display:inline-block;">${s.price.label}</span>` : '';
+    card.innerHTML = `<span class="lvl-badge ${s.level}">${lvl.label}</span>${newBadge}${skillBadge}<div class="system-head"><div class="system-title">${s.title}</div><div class="system-stars">${'★'.repeat(s.stars)}${'☆'.repeat(5-s.stars)}<span style="color:var(--text-muted);font-size:11px;"> ${s.reviews}</span></div></div><div class="system-author">${s.author}${s.publishedAt ? ' · 公開 ' + s.publishedAt : ''}</div><div style="font-size:13px;color:var(--text-mid);">${s.desc}</div>${priceBadge}<div class="system-tags">${s.tags.map(t=>`<span>${t}</span>`).join('')}</div>`;
+    card.onclick = () => openDetail(s);
+    list.appendChild(card);
+  });
+}
+function renderStatus(listId, items, iconCls, icon) { const ul = document.getElementById(listId); items.forEach(item => { const li = document.createElement('li'); li.className = 'status-item'; li.innerHTML = `<div class="status-icon ${iconCls}">${icon}</div><div class="status-name">${item.name}</div><div class="status-pill">${item.tag}</div>`; ul.appendChild(li); }); }
+renderStatus('statusDone', STATUS_DONE, 'done', '✓'); renderStatus('statusWip', STATUS_WIP, 'wip', '◎'); renderStatus('statusSkill', STATUS_SKILL, 'skill', '◆');
+function renderSave(listId, items) { const ul = document.getElementById(listId); ul.innerHTML = ''; items.forEach(it => { const li = document.createElement('li'); li.className = 'save-item'; li.innerHTML = `<div class="save-icon">${it.icon}</div><div class="save-meta"><div class="save-title">${it.title}</div><div class="save-sub">${it.sub}</div></div><button class="save-action" onclick="event.stopPropagation();showToast('開く')">開く</button>`; ul.appendChild(li); }); }
+renderSave('saveFav', SAVE_FAV); renderSave('saveDL', SAVE_DL); renderSave('saveHistory', SAVE_HISTORY);
+let currentDlSystem = null;
+function openDetail(s) {
+  const lvl = TRANSFER_LEVELS[s.level];
+  document.getElementById('systemDetail').classList.add('active');
+  document.getElementById('detailTitle').textContent = s.title;
+  document.getElementById('detailContent').innerHTML = `
+    <div class="transfer-info ${s.level}"><div class="transfer-title">${lvl.label}</div><div style="font-size:12px;color:var(--text-mid);margin-bottom:8px;">${lvl.desc}</div><ul class="transfer-list">${lvl.responsibilities.map(r=>`<li>${r}</li>`).join('')}</ul></div>
+    <div class="detail-section"><h4>仕様説明</h4><p>${s.desc}</p><div class="system-tags" style="margin-top:10px;">${s.tags.map(t=>`<span>${t}</span>`).join('')}</div></div>
+    <div class="detail-section"><h4>開発者</h4><div style="display:flex;align-items:center;gap:10px;"><div class="avatar">樋</div><div><div style="font-weight:500;">${s.author}</div><div style="font-size:11px;color:var(--text-muted);">不動産営業 + 開発</div></div></div></div>
+    <div class="detail-section"><h4>利用目的</h4><p>${s.purpose}</p></div>
+    ${s.publish ? `<div class="detail-section" style="border:1px solid rgba(107,142,90,0.4);background:rgba(107,142,90,0.05);"><h4 style="color:var(--level-a);">🟢 Level A 公開メタデータ</h4><div style="font-size:12px;line-height:1.9;"><div><strong>運営マニュアル:</strong> <span style="color:var(--blue);font-family:monospace;">${s.publish.manualUrl}</span></div><div style="margin-top:6px;"><strong>サポート期間:</strong> ${s.publish.supportPeriod}</div><div><strong>緊急問合せ:</strong> ${s.publish.supportContact}</div><div><strong>動作環境:</strong> ${s.publish.environment || '—'}</div><div><strong>ライセンス:</strong> ${s.publish.license || '—'}</div><div><strong>エスクロー:</strong> ${s.publish.escrowDays}日</div></div><div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);"><div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:4px;">引継ぎ条件</div><ul style="list-style:none;font-size:12px;line-height:1.7;">${s.publish.handoverConditions.map(c=>`<li>・${c}</li>`).join('')}</ul></div><div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);"><div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:4px;">引継ぎ完了基準</div><ul style="list-style:none;font-size:12px;line-height:1.7;">${s.publish.handoverCompletion.map(c=>`<li>✓ ${c}</li>`).join('')}</ul></div></div>` : ''}
+    ${s.skillPackage && s.price ? `<div class="detail-section" style="border:1px solid rgba(139,109,181,0.4);background:rgba(139,109,181,0.05);"><h4 style="color:var(--purple);">📦 スキル販売プラン</h4><div style="display:grid;gap:8px;margin-top:8px;">${s.price.plans.map((p,i) => `<div style="background:var(--bg-card);border:1px solid var(--border-soft);border-radius:10px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;"><div><div style="font-size:13px;font-weight:600;">${p.name}</div><div style="font-size:10px;color:var(--text-muted);">${i===0?'お試し':'おすすめ'}</div></div><div style="font-size:14px;font-weight:600;color:var(--accent);">${p.price}</div></div>`).join('')}</div><div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);font-size:11px;color:var(--text-muted);line-height:1.7;">※ アンソロウNFT会員 + Stripe/銀行振込で購入。決済後、ライセンスキーがメール送信されます</div></div>` : ''}
+    <div class="detail-section"><h4>GitHub URL</h4><div class="url-box"><span class="url">${s.github}</span><button class="copy-btn" onclick="copyUrl('${s.github}')">コピー</button></div></div>
+    <div class="detail-actions"><button class="btn">♡ お気に入り</button><button class="dl-btn ${s.level}" onclick='openDownload(${JSON.stringify(s).replace(/'/g, "&#39;")})'>⬇ ダウンロード</button></div>
+  `;
+}
+function closeDetail() { document.getElementById('systemDetail').classList.remove('active'); }
+function copyUrl(url) { if (navigator.clipboard) navigator.clipboard.writeText(url).then(()=>showToast('URLをコピー')); else showToast('コピー: ' + url); }
+function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2400); }
+function openDownload(s) {
+  currentDlSystem = s;
+  const lvl = TRANSFER_LEVELS[s.level];
+  document.getElementById('dlTitle').innerHTML = `${lvl.label} <span style="font-weight:400;color:var(--text-muted);font-size:13px;">/ ${s.title}</span>`;
+  document.getElementById('dlSub').textContent = lvl.dlNote;
+  const body = document.getElementById('dlBody');
+  let levelSpecific = '';
+  if (s.level === 'a') {
+    const p = s.publish || {};
+    levelSpecific = `<div class="dl-section"><h5>運営保証可能</h5><div class="dl-row-flex"><span class="lbl">エスクロー期間</span><span class="val">${p.escrowDays || 30}日</span></div><div class="dl-row-flex"><span class="lbl">サポート</span><span class="val">${p.supportPeriod || '引継ぎ後30日'}</span></div><div class="dl-row-flex"><span class="lbl">バグ修正</span><span class="val">30日対応</span></div>${p.environment ? `<div class="dl-row-flex"><span class="lbl">動作環境</span><span class="val">${p.environment}</span></div>` : ''}${p.license ? `<div class="dl-row-flex"><span class="lbl">ライセンス</span><span class="val">${p.license}</span></div>` : ''}</div>`;
+  } else if (s.level === 'b') {
+    levelSpecific = `<div class="dl-section"><h5>再構築必要 · 素材として</h5><div class="dl-row-flex"><span class="lbl">エスクロー期間</span><span class="val">14日</span></div><div class="dl-row-flex"><span class="lbl">動作保証</span><span class="val" style="color:var(--yellow);">なし</span></div><div class="dl-row-flex"><span class="lbl">設計意図</span><span class="val" style="color:var(--green);">提供あり ✓</span></div></div>`;
+  } else {
+    levelSpecific = `<div class="dl-section"><h5>データ資産</h5><div class="dl-row-flex"><span class="lbl">エスクロー期間</span><span class="val">7日</span></div><div class="dl-row-flex"><span class="lbl">出典</span><span class="val">明示あり ✓</span></div><div class="dl-row-flex"><span class="lbl">利用範囲</span><span class="val">商用利用可</span></div></div>`;
+  }
+  body.innerHTML = `${levelSpecific}<div class="dl-section"><h5>譲渡側の責任</h5>${lvl.responsibilities.map(r => `<div class="row">${r}</div>`).join('')}</div><div class="dl-section"><h5>取得元</h5><div class="url-box"><span class="url">${s.github}</span><button class="copy-btn" onclick="copyUrl('${s.github}')">コピー</button></div></div><label class="dl-check"><input type="checkbox" id="dlAgree" onchange="document.getElementById('dlConfirmBtn').disabled = !this.checked"><span class="ck-text"><strong>${lvl.label}</strong> の譲渡条件を確認し、同意のうえダウンロードします。</span></label>`;
+  document.getElementById('dlConfirmBtn').disabled = true;
+  document.getElementById('dlModal').classList.add('active');
+}
+function closeDownload() { document.getElementById('dlModal').classList.remove('active'); currentDlSystem = null; }
+function confirmDownload() {
+  if (!currentDlSystem) return;
+  const s = currentDlSystem;
+  const lvl = TRANSFER_LEVELS[s.level];
+  SAVE_DL.unshift({ icon: '⬇️', title: s.title, sub: new Date().toISOString().slice(0,10) + ' · ' + lvl.label });
+  renderSave('saveDL', SAVE_DL);
+  if (s.github && s.github.startsWith('http')) { try { window.open(s.github, '_blank', 'noopener'); } catch(e) {} }
+  showToast('✓ ' + lvl.label + ' でダウンロード開始');
+  closeDownload();
+}
+
+/* === PWA v0.6: ServiceWorker 登録 === */
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').then((reg) => {
+      // 更新検知
+      if (reg && reg.addEventListener) {
+        reg.addEventListener('updatefound', () => {
+          const nw = reg.installing;
+          if (nw) nw.addEventListener('statechange', () => {
+            if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+              try { showToast('✓ 新バージョンを準備しました。再起動で反映'); } catch(e) {}
+            }
+          });
+        });
+      }
+    }).catch(() => { /* SW未対応環境では静かにスキップ */ });
+  });
+}
+</script>
+</body>
+</html>
